@@ -32,10 +32,10 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   navigate('/login');
+  // };
 
   const handleAddEntry = () => {
     navigate('/add-entry');
