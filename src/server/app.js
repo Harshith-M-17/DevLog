@@ -7,14 +7,24 @@ const app = express();
 
 // CORS middleware FIRST
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://devlogbyharshith.netlify.app'
+  ],
   credentials: true
 }));
 
 // CORS preflight handler for all OPTIONS requests
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://devlogbyharshith.netlify.app'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
     res.header('Access-Control-Allow-Credentials', 'true');
