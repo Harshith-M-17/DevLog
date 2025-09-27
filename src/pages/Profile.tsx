@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getProfile, updateProfile } from "../services/api";
-import type { ProfileData } from "../services/api";
 import "./Profile.css";
 
 export const Profile: React.FC = () => {
-	const { user } = useAuth();
+	const { /* user */ } = useAuth(); // removed unused variable
 	const [name, setName] = useState<string>("");
 	const [email, setEmail] = useState<string>("");
 	const [team, setTeam] = useState<string>("Frontend Team");
@@ -13,10 +12,10 @@ export const Profile: React.FC = () => {
 	const [password, setPassword] = useState<string>("");
 	const [editing, setEditing] = useState(false);
 	const [message, setMessage] = useState("");
-	const [loading, setLoading] = useState(false);
+	// Removed unused 'loading' variable
 
 	useEffect(() => {
-		setLoading(true);
+		// removed setLoading
 		getProfile()
 			.then(res => {
 				setName(res.data.name || "");
@@ -24,7 +23,7 @@ export const Profile: React.FC = () => {
 				setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
 			})
 			.catch(() => setMessage("Failed to load profile"))
-			.finally(() => setLoading(false));
+			// .finally(() => setLoading(false));
 	}, []);
 
 	const handleEdit = () => setEditing(true);
@@ -41,17 +40,14 @@ export const Profile: React.FC = () => {
 
 	const handleSave = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setLoading(true);
-		const updateData: ProfileData = { name };
-		if (password) updateData.password = password;
+	// removed setLoading
+		const updateData = { name: name || "", email: email || "" };
 		try {
 			await updateProfile(updateData);
 			setMessage("Profile updated successfully");
 			setEditing(false);
 		} catch {
 			setMessage("Failed to update profile");
-		} finally {
-			setLoading(false);
 		}
 	};
 
