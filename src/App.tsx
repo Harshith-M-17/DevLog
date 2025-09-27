@@ -4,6 +4,8 @@ import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 import { Auth } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { EntryForm } from './pages/EntryForm';
+import { Profile } from './pages/Profile';
+import Navbar from './components/Navbar';
 import './App.css';
 
 function App() {
@@ -11,6 +13,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="app">
+          <Navbar />
           <Routes>
             {/* Public routes - redirect to dashboard if authenticated */}
             <Route 
@@ -46,6 +49,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EntryForm />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               } 
             />

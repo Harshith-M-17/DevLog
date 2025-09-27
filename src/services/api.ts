@@ -1,70 +1,49 @@
-import axios, { type AxiosResponse } from 'axios';
-import type { 
-  AuthResponse, 
-  LoginRequest, 
-  RegisterRequest, 
-  DailyEntry, 
-  CreateDailyEntryRequest, 
-  UpdateDailyEntryRequest 
-} from '../types';
+import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001'; // Adjust this to your backend URL
+const API_URL = 'http://localhost:5001/api';
 
-// Create axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_URL,
 });
 
-// Add token to requests if available
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers['x-auth-token'] = token;
   }
   return config;
 });
 
-// Auth API calls
-export const authAPI = {
-  login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    const response: AxiosResponse<AuthResponse> = await api.post('/api/auth/login', credentials);
-    return response.data;
-  },
+export interface RegisterData {
+    name: string;
+    email: string;
+    password: string;
+}
 
-  register: async (userData: RegisterRequest): Promise<AuthResponse> => {
-    const response: AxiosResponse<AuthResponse> = await api.post('/api/auth/register', userData);
-    return response.data;
-  },
+export const register = (data: RegisterData) => api.post('/auth/register', data);
+export interface LoginData {
+    email: string;
+    password: string;
+}
 
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  },
-};
+export const login = (data: LoginData) => api.post('/auth/login', data);
 
-// Daily entries API calls
-export const dailyEntriesAPI = {
-  getAll: async (): Promise<DailyEntry[]> => {
-    const response: AxiosResponse<DailyEntry[]> = await api.get('/api/daily-entries');
-    return response.data;
-  },
+export interface ProfileData {
+  name?: string;
+  email?: string;
+  password?: string;
+}
 
-  create: async (entryData: CreateDailyEntryRequest): Promise<DailyEntry> => {
-    const response: AxiosResponse<DailyEntry> = await api.post('/api/daily-entries', entryData);
-    return response.data;
-  },
+export const getProfile = () => api.get('/profile/me');
+export const updateProfile = (profileData: { name: string; email: string }) => api.put('/profile', profileData);
 
-  update: async (id: string, entryData: UpdateDailyEntryRequest): Promise<DailyEntry> => {
-    const response: AxiosResponse<DailyEntry> = await api.put(`/api/daily-entries/${id}`, entryData);
-    return response.data;
-  },
+import type { CreateDailyEntryRequest } from '../types';
 
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/api/daily-entries/${id}`);
-  },
-};
+export const getEntries = () => api.get('/entries');
+export const createEntry = (data: CreateDailyEntryRequest) => api.post('/entries', data);
+export const deleteEntry = (id: string) => api.delete(`/entries/${id}`);
+export const getEntry = (id: string) => api.get(`/entries/${id}`);
+export const updateEntry = (id: string, data: CreateDailyEntryRequest) => api.put(`/entries/${id}`, data);
 
-export default api;
+export const getStats = () => api.get('/analytics/stats');
+export const getTeam = () => api.get('/analytics/team');

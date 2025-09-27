@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { register, login as loginApi } from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { authAPI } from '../services/api';
+// ...existing code...
 import { validateEmail, validatePassword, validateRequired } from '../utils/auth';
 import './Auth.css';
 
@@ -87,26 +88,30 @@ export const Auth: React.FC = () => {
 
     try {
       let response;
-      
-      if (mode === 'login') {
-        response = await authAPI.login({
-          email: formData.email,
-          password: formData.password,
-        });
-      } else {
-        response = await authAPI.register({
+      if (mode === 'register') {
+        response = await register({
           email: formData.email,
           password: formData.password,
           name: formData.name,
         });
+                // Registration does not return user/token, so just show success or auto-login
+        if (response.status === 201) {
+          // Optionally, auto-login after registration
+          const loginResp = await loginApi({ email: formData.email, password: formData.password });
+          const { token, user } = loginResp.data;
+          login(token, user);
+          navigate(from, { replace: true });
+        }
+      } else {
+        response = await loginApi({ email: formData.email, password: formData.password });
+        const { token, user } = response.data;
+        login(token, user);
+        navigate(from, { replace: true });
       }
-
-      login(response.token, response.user);
-      navigate(from, { replace: true });
     } catch (error: any) {
       console.error(`${mode} error:`, error);
       setErrors({
-        general: error.response?.data?.message || `${mode} failed. Please try again.`,
+        general: error.response?.data?.error || `${mode} failed. Please try again.`,
       });
     } finally {
       setLoading(false);

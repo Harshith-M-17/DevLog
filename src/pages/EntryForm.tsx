@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { dailyEntriesAPI } from '../services/api';
+import { createEntry, getEntry, updateEntry } from '../services/api';
 import { validateRequired, validateGitHubLink } from '../utils/auth';
 import type { CreateDailyEntryRequest } from '../types';
 import './EntryForm.css';
@@ -44,21 +44,9 @@ export const EntryForm: React.FC = () => {
   const loadEntry = async (entryId: string) => {
     try {
       setLoadingEntry(true);
-      // In a real app, you'd have a get-by-id endpoint
-      // For now, we'll fetch all entries and find the one we need
-      const entries = await dailyEntriesAPI.getAll();
-      const entry = entries.find(e => e.id === entryId);
-      
-      if (entry) {
-        setFormData({
-          workDone: entry.workDone,
-          blockers: entry.blockers || '',
-          learnings: entry.learnings || '',
-          githubCommitLink: entry.githubCommitLink || '',
-        });
-      } else {
-        setErrors({ general: 'Entry not found' });
-      }
+      const response = await getEntry(entryId);
+      const { workDone, blockers, learnings, githubCommitLink } = response.data;
+      setFormData({ workDone, blockers, learnings, githubCommitLink: githubCommitLink || '' });
     } catch (error: any) {
       console.error('Error loading entry:', error);
       setErrors({ general: 'Failed to load entry' });
@@ -125,18 +113,15 @@ export const EntryForm: React.FC = () => {
       };
 
       if (isEditing && id) {
-        await dailyEntriesAPI.update(id, { id, ...entryData });
+        await updateEntry(id, entryData);
       } else {
-        await dailyEntriesAPI.create(entryData);
+        await createEntry(entryData);
       }
-
+      
       navigate('/dashboard');
     } catch (error: any) {
       console.error(`${isEditing ? 'Update' : 'Create'} error:`, error);
-      // For testing, simulate success when API is not available
-      console.log('API not available, simulating success for testing');
-      alert(`Entry ${isEditing ? 'updated' : 'created'} successfully! (Mock success for testing)`);
-      navigate('/dashboard');
+      setErrors({ general: error?.response?.data?.error || `Failed to ${isEditing ? 'update' : 'create'} entry` });
     } finally {
       setLoading(false);
     }
