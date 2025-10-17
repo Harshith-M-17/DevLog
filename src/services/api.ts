@@ -32,10 +32,11 @@ export interface ProfileData {
   name?: string;
   email?: string;
   password?: string;
+  team?: string;
 }
 
 export const getProfile = () => api.get('/profile/me');
-export const updateProfile = (profileData: { name: string; email: string }) => api.put('/profile', profileData);
+export const updateProfile = (profileData: { name: string; email: string; team?: string }) => api.put('/profile', profileData);
 
 import type { CreateDailyEntryRequest } from '../types';
 

@@ -192,21 +192,6 @@ export const EntryForm: React.FC = () => {
             {errors.learnings && <span className="error-message">{errors.learnings}</span>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="githubCommitLink">GitHub Commit Link</label>
-            <input
-              type="url"
-              id="githubCommitLink"
-              name="githubCommitLink"
-              value={formData.githubCommitLink}
-              onChange={handleInputChange}
-              className={errors.githubCommitLink ? 'error' : ''}
-              placeholder="https://github.com/username/repo/commit/abc123..."
-            />
-            {errors.githubCommitLink && <span className="error-message">{errors.githubCommitLink}</span>}
-            <small className="help-text">Optional: Link to your main commit for today</small>
-          </div>
-
           {errors.general && (
             <div className="error-message general-error">{errors.general}</div>
           )}

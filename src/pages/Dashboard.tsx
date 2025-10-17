@@ -135,6 +135,7 @@ export const Dashboard: React.FC = () => {
       <main className="dashboard-main">
         {loading && (
           <div className="loading-state">
+            <div className="loader-spinner" />
             <div className="loading-spinner">Loading entries...</div>
           </div>
         )}

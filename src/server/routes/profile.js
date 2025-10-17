@@ -20,12 +20,13 @@ router.get('/me', auth, async (req, res) => {
 // @desc    Update user profile
 // @access  Private
 router.put('/', auth, async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, team } = req.body;
 
   // Build profile object
   const profileFields = {};
   if (name) profileFields.name = name;
   if (email) profileFields.email = email;
+  if (team) profileFields.team = team;
 
   try {
     let user = await User.findById(req.user.id);

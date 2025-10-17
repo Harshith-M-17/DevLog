@@ -118,18 +118,6 @@ export const Auth: React.FC = () => {
     }
   };
 
-  const handleTestLogin = () => {
-    // Bypass API and login with mock data for testing
-    const mockUser = {
-      id: 'test-user-1',
-      email: 'test@example.com',
-      name: 'Test User',
-    };
-    const mockToken = 'mock-jwt-token-for-testing';
-    
-    login(mockToken, mockUser);
-    navigate(from, { replace: true });
-  };
 
   const toggleMode = () => {
     setMode(prev => prev === 'login' ? 'register' : 'login');
@@ -206,14 +194,6 @@ export const Auth: React.FC = () => {
             {loading ? 'Loading...' : (mode === 'login' ? 'Sign In' : 'Sign Up')}
           </button>
 
-          <button
-            type="button"
-            onClick={handleTestLogin}
-            className="test-login-btn"
-            disabled={loading}
-          >
-            🚀 Quick Test Login
-          </button>
         </form>
 
         <div className="auth-toggle">

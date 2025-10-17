@@ -7,23 +7,23 @@ export const Profile: React.FC = () => {
 	const { /* user */ } = useAuth(); // removed unused variable
 	const [name, setName] = useState<string>("");
 	const [email, setEmail] = useState<string>("");
-	const [team, setTeam] = useState<string>("Frontend Team");
+	const [team, setTeam] = useState<string>("");
 	const [joined, setJoined] = useState<string>("");
 	const [password, setPassword] = useState<string>("");
 	const [editing, setEditing] = useState(false);
 	const [message, setMessage] = useState("");
-	// Removed unused 'loading' variable
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		// removed setLoading
-		getProfile()
-			.then(res => {
-				setName(res.data.name || "");
-				setEmail(res.data.email || "");
-				setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
-			})
-			.catch(() => setMessage("Failed to load profile"))
-			// .finally(() => setLoading(false));
+			getProfile()
+				.then(res => {
+					setName(res.data.name || "");
+					setEmail(res.data.email || "");
+					setTeam(res.data.team || "");
+					setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
+				})
+				.catch(() => setMessage("Failed to load profile"))
+				.finally(() => setLoading(false));
 	}, []);
 
 	const handleEdit = () => setEditing(true);
@@ -31,17 +31,22 @@ export const Profile: React.FC = () => {
 		setEditing(false);
 		setPassword("");
 		setMessage("");
-		getProfile().then(res => {
-			setName(res.data.name || "");
-			setEmail(res.data.email || "");
-			setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
-		});
+		setLoading(true);
+		getProfile()
+			.then(res => {
+				setName(res.data.name || "");
+				setEmail(res.data.email || "");
+				setTeam(res.data.team || "");
+				setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
+			})
+			.catch(() => setMessage("Failed to load profile"))
+			.finally(() => setLoading(false));
 	};
 
 	const handleSave = async (e: React.FormEvent) => {
 		e.preventDefault();
 	// removed setLoading
-		const updateData = { name: name || "", email: email || "" };
+		const updateData = { name: name || "", email: email || "", team: team || "" };
 		try {
 			await updateProfile(updateData);
 			setMessage("Profile updated successfully");
@@ -55,14 +60,14 @@ export const Profile: React.FC = () => {
 		<div className="profile-card">
 			<h2>Profile</h2>
 			<div className="profile-info">
-				<div><strong>Name:</strong> {editing ? (
+				<div><strong>Name:</strong> {loading ? (
+					<span className="skeleton skeleton-text" style={{width: 120}} />
+				) : editing ? (
 					<input value={name} onChange={e => setName(e.target.value)} />
 				) : name}</div>
-				<div><strong>Email:</strong> {email}</div>
-				<div><strong>Team:</strong> {editing ? (
-					<input value={team} onChange={e => setTeam(e.target.value)} />
-				) : team}</div>
-				<div><strong>Joined:</strong> {joined}</div>
+				<div><strong>Email:</strong> {loading ? (
+					<span className="skeleton skeleton-text" style={{width: 180}} />
+				) : email}</div>
 				{editing && (
 					<div>
 						<strong>New Password:</strong>
@@ -77,7 +82,7 @@ export const Profile: React.FC = () => {
 						<button onClick={handleCancel}>Cancel</button>
 					</>
 				) : (
-					<button onClick={handleEdit}>Edit Profile</button>
+					<button onClick={handleEdit} disabled={loading}>Edit Profile</button>
 				)}
 			</div>
 			{message && <div style={{marginTop: "1rem", color: "#388e3c"}}>{message}</div>}
