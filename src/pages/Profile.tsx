@@ -8,7 +8,6 @@ export const Profile: React.FC = () => {
 	const [name, setName] = useState<string>("");
 	const [email, setEmail] = useState<string>("");
 	const [team, setTeam] = useState<string>("");
-	const [joined, setJoined] = useState<string>("");
 	const [password, setPassword] = useState<string>("");
 	const [editing, setEditing] = useState(false);
 	const [message, setMessage] = useState("");
@@ -20,7 +19,6 @@ export const Profile: React.FC = () => {
 					setName(res.data.name || "");
 					setEmail(res.data.email || "");
 					setTeam(res.data.team || "");
-					setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
 				})
 				.catch(() => setMessage("Failed to load profile"))
 				.finally(() => setLoading(false));
@@ -37,7 +35,6 @@ export const Profile: React.FC = () => {
 				setName(res.data.name || "");
 				setEmail(res.data.email || "");
 				setTeam(res.data.team || "");
-				setJoined(res.data.createdAt ? new Date(res.data.createdAt).toLocaleDateString() : "");
 			})
 			.catch(() => setMessage("Failed to load profile"))
 			.finally(() => setLoading(false));
