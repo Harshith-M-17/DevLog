@@ -10,6 +10,7 @@ import { Dashboard } from './pages/Dashboard';
 import { EntryForm } from './pages/EntryForm';
 import { Profile } from './pages/Profile';
 import { Chat } from './pages/Chat';
+import { VideoCall } from './pages/VideoCall';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -73,6 +74,15 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <Chat />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/video-call" 
+            element={
+              <ProtectedRoute>
+                <VideoCall />
               </ProtectedRoute>
             } 
           />

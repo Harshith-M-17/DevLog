@@ -32,6 +32,9 @@ const Navbar: React.FC = () => {
         <li>
           <Link to="/chat">Chat</Link>
         </li>
+        <li>
+          <Link to="/video-call">Video Call</Link>
+        </li>
       </ul>
       <div className="navbar-user">
         {user && <span className="navbar-username">{user.name}</span>}

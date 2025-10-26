@@ -63,7 +63,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-// Socket.io chat functionality
+// Socket.io chat and video call functionality
+const onlineVideoUsers = new Map(); // Track users in video call lobby
+
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
@@ -77,6 +79,69 @@ io.on('connection', (socket) => {
       name: userData.name,
       message: `${userData.name} joined the chat`
     });
+  });
+
+  // Video call: Join video lobby
+  socket.on('video-join', (userData) => {
+    socket.videoUserData = userData;
+    onlineVideoUsers.set(socket.id, {
+      id: userData.id,
+      name: userData.name,
+      socketId: socket.id
+    });
+    
+    console.log(`${userData.name} joined video lobby`);
+    
+    // Send updated user list to all clients
+    const userList = Array.from(onlineVideoUsers.values()).map(user => ({
+      id: user.id,
+      name: user.name
+    }));
+    io.emit('online-users', userList);
+  });
+
+  // Video call: Offer
+  socket.on('video-offer', ({ to, offer }) => {
+    const targetUser = Array.from(onlineVideoUsers.values()).find(user => user.id === to);
+    if (targetUser) {
+      io.to(targetUser.socketId).emit('video-offer', {
+        from: socket.videoUserData?.id,
+        fromName: socket.videoUserData?.name,
+        offer
+      });
+    }
+  });
+
+  // Video call: Answer
+  socket.on('video-answer', ({ to, answer }) => {
+    const targetUser = Array.from(onlineVideoUsers.values()).find(user => user.id === to);
+    if (targetUser) {
+      io.to(targetUser.socketId).emit('video-answer', {
+        from: socket.videoUserData?.id,
+        answer
+      });
+    }
+  });
+
+  // Video call: ICE candidate
+  socket.on('ice-candidate', ({ to, candidate }) => {
+    const targetUser = Array.from(onlineVideoUsers.values()).find(user => user.id === to);
+    if (targetUser) {
+      io.to(targetUser.socketId).emit('ice-candidate', {
+        from: socket.videoUserData?.id,
+        candidate
+      });
+    }
+  });
+
+  // Video call: Leave
+  socket.on('leave-video', () => {
+    if (socket.videoUserData) {
+      console.log(`${socket.videoUserData.name} left video call`);
+      io.emit('user-left-video', {
+        userId: socket.videoUserData.id
+      });
+    }
   });
 
   // Handle chat messages
@@ -103,6 +168,20 @@ io.on('connection', (socket) => {
 
   // Handle disconnect
   socket.on('disconnect', () => {
+    // Remove from video users
+    if (socket.videoUserData) {
+      onlineVideoUsers.delete(socket.id);
+      const userList = Array.from(onlineVideoUsers.values()).map(user => ({
+        id: user.id,
+        name: user.name
+      }));
+      io.emit('online-users', userList);
+      io.emit('user-left-video', {
+        userId: socket.videoUserData.id
+      });
+    }
+    
+    // Handle chat disconnect
     if (socket.userData) {
       console.log(`${socket.userData.name} disconnected`);
       io.emit('user-left', {
