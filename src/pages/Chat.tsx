@@ -25,12 +25,20 @@ export const Chat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [typingUser, setTypingUser] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<number | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Connect to socket
   useEffect(() => {
-    const newSocket = io('http://localhost:5001', {
-      transports: ['websocket'],
+    // Use production URL in production, localhost in development
+    const SOCKET_URL = import.meta.env.PROD 
+      ? 'https://devlog-1.onrender.com' 
+      : 'http://localhost:5001';
+    
+    const newSocket = io(SOCKET_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
     });
 
     setSocket(newSocket);

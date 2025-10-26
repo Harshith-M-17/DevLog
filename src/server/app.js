@@ -13,8 +13,10 @@ const io = new Server(server, {
       'http://localhost:5173',
       'https://devlogbyharshith.netlify.app'
     ],
+    methods: ['GET', 'POST'],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling']
 });
 
 // CORS middleware FIRST
