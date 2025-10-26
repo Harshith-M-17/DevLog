@@ -29,6 +29,9 @@ const Navbar: React.FC = () => {
         <li>
           <Link to="/dashboard">Dashboard</Link>
         </li>
+        <li>
+          <Link to="/chat">Chat</Link>
+        </li>
       </ul>
       <div className="navbar-user">
         {user && <span className="navbar-username">{user.name}</span>}
