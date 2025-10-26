@@ -1,18 +1,29 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.token);
+  const isHydrating = useSelector((state: RootState) => state.auth.isHydrating);
   const location = useLocation();
 
-  if (loading) {
+  const isAuthenticated = !!token && !!user;
+
+  // Show loading while hydrating
+  if (isHydrating) {
     return (
-      <div className="loading-container">
+      <div className="loading-container" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
         <div className="loading-spinner">Loading...</div>
       </div>
     );
@@ -31,11 +42,21 @@ interface PublicRouteProps {
 }
 
 export const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.token);
+  const isHydrating = useSelector((state: RootState) => state.auth.isHydrating);
 
-  if (loading) {
+  const isAuthenticated = !!token && !!user;
+
+  // Show loading while hydrating
+  if (isHydrating) {
     return (
-      <div className="loading-container">
+      <div className="loading-container" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
         <div className="loading-spinner">Loading...</div>
       </div>
     );

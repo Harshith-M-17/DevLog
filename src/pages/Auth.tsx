@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { register, login as loginApi } from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { setUser, setToken } from '../store/authSlice';
+import { setEntries } from '../store/entriesSlice';
+import { getProfile, getEntries } from '../services/api';
 // ...existing code...
 import { validateEmail, validatePassword, validateRequired } from '../utils/auth';
 import './Auth.css';
@@ -31,7 +34,7 @@ export const Auth: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -94,22 +97,49 @@ export const Auth: React.FC = () => {
           password: formData.password,
           name: formData.name,
         });
-                // Registration does not return user/token, so just show success or auto-login
         if (response.status === 201) {
-          // Optionally, auto-login after registration
           const loginResp = await loginApi({ email: formData.email, password: formData.password });
           const { token, user } = loginResp.data;
-          login(token, user);
+          dispatch(setToken(token));
+          localStorage.setItem('token', token);
+          // Fetch profile and set in Redux
+          try {
+            const profileRes = await getProfile();
+            dispatch(setUser(profileRes.data));
+          } catch {
+            dispatch(setUser(user)); // fallback to login response
+          }
+          // Fetch entries and set in Redux
+          try {
+            const entriesRes = await getEntries();
+            dispatch(setEntries(entriesRes.data));
+          } catch {
+            dispatch(setEntries([]));
+          }
           navigate(from, { replace: true });
         }
       } else {
         response = await loginApi({ email: formData.email, password: formData.password });
         const { token, user } = response.data;
-        login(token, user);
+        dispatch(setToken(token));
+        localStorage.setItem('token', token);
+        // Fetch profile and set in Redux
+        try {
+          const profileRes = await getProfile();
+          dispatch(setUser(profileRes.data));
+        } catch {
+          dispatch(setUser(user)); // fallback to login response
+        }
+        // Fetch entries and set in Redux
+        try {
+          const entriesRes = await getEntries();
+          dispatch(setEntries(entriesRes.data));
+        } catch {
+          dispatch(setEntries([]));
+        }
         navigate(from, { replace: true });
       }
     } catch (error: any) {
-      console.error(`${mode} error:`, error);
       setErrors({
         general: error.response?.data?.error || `${mode} failed. Please try again.`,
       });

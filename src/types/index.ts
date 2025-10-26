@@ -1,7 +1,9 @@
 export interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   email: string;
   name: string;
+  team?: string;
 }
 
 export interface AuthResponse {

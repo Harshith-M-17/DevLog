@@ -1,30 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getEntries, deleteEntry } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store';
+import { setEntries } from '../store/entriesSlice';
 
 import type { DailyEntry } from '../types';
 import './Dashboard.css';
 
 export const Dashboard: React.FC = () => {
-  const [entries, setEntries] = useState<DailyEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const entries = useSelector((state: RootState) => state.entries.entries);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  const { user } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchEntries();
+    // Only fetch if entries are empty (not already loaded from login)
+    if (entries.length === 0) {
+      fetchEntries();
+    }
   }, []);
 
   const fetchEntries = async () => {
     try {
       setLoading(true);
       const response = await getEntries();
-      setEntries(response.data);
+      dispatch(setEntries(response.data));
       setError('');
     } catch (err: any) {
-      console.error('Error fetching entries:', err);
       setError('Failed to fetch entries. Please try again later.');
     } finally {
       setLoading(false);
@@ -48,9 +53,8 @@ export const Dashboard: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this entry?')) {
       try {
         await deleteEntry(entryId);
-        setEntries(entries.filter((entry) => entry.id !== entryId));
+        dispatch(setEntries(entries.filter((entry) => entry.id !== entryId)));
       } catch (err) {
-        console.error('Error deleting entry:', err);
         setError('Failed to delete entry.');
       }
     }
@@ -66,14 +70,16 @@ export const Dashboard: React.FC = () => {
     });
   };
 
-  const renderEntry = (entry: DailyEntry) => (
+  const renderEntry = (entry: DailyEntry) => {
+    const userId = user?._id || user?.id;
+    return (
     <div key={entry.id} className="entry-card">
       <div className="entry-header">
         <div className="entry-user">
           <h3>{entry.userName}</h3>
           <span className="entry-date">{formatDate(entry.date)}</span>
         </div>
-        {user?.id === entry.userId && (
+        {userId === entry.userId && (
           <div className="entry-actions">
             <button
               onClick={() => handleEditEntry(entry.id)}
@@ -128,7 +134,8 @@ export const Dashboard: React.FC = () => {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="dashboard-container">

@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store';
+import { setUser } from '../store/authSlice';
 import { getProfile, updateProfile } from "../services/api";
 import "./Profile.css";
 
 export const Profile: React.FC = () => {
-	const { /* user */ } = useAuth(); // removed unused variable
-	const [name, setName] = useState<string>("");
-	const [email, setEmail] = useState<string>("");
-	const [team, setTeam] = useState<string>("");
+	const dispatch = useDispatch();
+	const user = useSelector((state: RootState) => state.auth.user);
+	const [name, setName] = useState<string>(user?.name || "");
+	const [email, setEmail] = useState<string>(user?.email || "");
+	const [team, setTeam] = useState<string>(user?.team || "");
 	const [password, setPassword] = useState<string>("");
 	const [editing, setEditing] = useState(false);
 	const [message, setMessage] = useState("");
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-			getProfile()
-				.then(res => {
-					setName(res.data.name || "");
-					setEmail(res.data.email || "");
-					setTeam(res.data.team || "");
-				})
-				.catch(() => setMessage("Failed to load profile"))
-				.finally(() => setLoading(false));
+		getProfile()
+			.then(res => {
+				dispatch(setUser(res.data));
+				setName(res.data.name || "");
+				setEmail(res.data.email || "");
+				setTeam(res.data.team || "");
+			})
+			.catch(() => setMessage("Failed to load profile"))
+			.finally(() => setLoading(false));
 	}, []);
 
 	const handleEdit = () => setEditing(true);
@@ -32,6 +36,7 @@ export const Profile: React.FC = () => {
 		setLoading(true);
 		getProfile()
 			.then(res => {
+				dispatch(setUser(res.data));
 				setName(res.data.name || "");
 				setEmail(res.data.email || "");
 				setTeam(res.data.team || "");
@@ -45,7 +50,8 @@ export const Profile: React.FC = () => {
 	// removed setLoading
 		const updateData = { name: name || "", email: email || "", team: team || "" };
 		try {
-			await updateProfile(updateData);
+			const res = await updateProfile(updateData);
+			dispatch(setUser(res.data));
 			setMessage("Profile updated successfully");
 			setEditing(false);
 		} catch {

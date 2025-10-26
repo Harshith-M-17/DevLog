@@ -1,15 +1,19 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store';
+import { logout } from '../store/authSlice';
 import "./Navbar.css";
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+  dispatch(logout());
+  localStorage.removeItem('token');
+  navigate("/login");
   };
 
   return (

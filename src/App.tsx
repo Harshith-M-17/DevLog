@@ -1,5 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setUser, setToken, setHydrating } from './store/authSlice';
+import { setEntries } from './store/entriesSlice';
+import { getProfile, getEntries } from './services/api';
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 import { Auth } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
@@ -9,31 +13,56 @@ import Navbar from './components/Navbar';
 import './App.css';
 
 function App() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(setToken(token));
+      getProfile()
+        .then(res => {
+          dispatch(setUser(res.data));
+          // Fetch entries after user is hydrated
+          getEntries()
+            .then(entriesRes => {
+              dispatch(setEntries(entriesRes.data));
+            })
+            .catch(() => {
+              dispatch(setEntries([]));
+            });
+        })
+        .catch(() => {
+          dispatch(setUser(null));
+        });
+    } else {
+      // No token found, finish hydration immediately
+      dispatch(setHydrating(false));
+    }
+  }, [dispatch]);
+
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app">
-          <Navbar />
-          <Routes>
-            {/* Public routes - redirect to dashboard if authenticated */}
-            <Route 
-              path="/login" 
-              element={
-                <PublicRoute>
-                  <Auth />
-                </PublicRoute>
-              } 
-            />
-            
-            {/* Protected routes - require authentication */}
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
+    <Router>
+      <div className="app">
+        <Navbar />
+        <Routes>
+          {/* Public routes - redirect to dashboard if authenticated */}
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            } 
+          />
+          
+          {/* Protected routes - require authentication */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
             
             <Route 
               path="/add-entry" 
@@ -70,7 +99,6 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </AuthProvider>
   );
 }
 
