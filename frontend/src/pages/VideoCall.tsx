@@ -21,6 +21,16 @@ export const VideoCall: React.FC = () => {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
+      // TURN server — required in production behind NAT
+      ...(import.meta.env.VITE_TURN_URL
+        ? [
+            {
+              urls: import.meta.env.VITE_TURN_URL,
+              username: import.meta.env.VITE_TURN_USERNAME ?? '',
+              credential: import.meta.env.VITE_TURN_CREDENTIAL ?? '',
+            },
+          ]
+        : []),
     ],
   };
 

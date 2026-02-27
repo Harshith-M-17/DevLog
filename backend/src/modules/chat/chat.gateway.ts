@@ -23,10 +23,13 @@ interface VideoUser {
  */
 @WebSocketGateway({
   cors: {
-    origin: (process.env.CORS_ORIGINS ?? '')
-      .split(',')
-      .map((o) => o.trim())
-      .filter(Boolean),
+    origin: (() => {
+      const origins = (process.env.CORS_ORIGINS ?? '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+      return origins.length ? origins : true;
+    })(),
     credentials: true,
     methods: ['GET', 'POST'],
   },
