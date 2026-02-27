@@ -36,6 +36,7 @@ export const Chat: React.FC = () => {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
+      withCredentials: true,
     });
 
     setSocket(newSocket);

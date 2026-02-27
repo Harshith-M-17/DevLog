@@ -41,6 +41,7 @@ export const VideoCall: React.FC = () => {
     const newSocket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
+      withCredentials: true,
     });
 
     setSocket(newSocket);
