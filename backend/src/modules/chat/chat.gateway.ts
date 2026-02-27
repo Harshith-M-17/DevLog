@@ -23,17 +23,23 @@ interface VideoUser {
  */
 @WebSocketGateway({
   cors: {
-    origin: (() => {
-      const origins = (process.env.CORS_ORIGINS ?? '')
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Read env var on every request so it's always up-to-date
+      const allowed = (process.env.CORS_ORIGINS ?? '')
         .split(',')
         .map((o) => o.trim())
         .filter(Boolean);
-      return origins.length ? origins : true;
-    })(),
+      // Allow all if no list configured, or if origin matches list, or no origin (server-to-server)
+      if (!allowed.length || !origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin ${origin} not allowed`));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST'],
   },
-  transports: ['websocket', 'polling'],
+  transports: ['polling', 'websocket'],
 })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect

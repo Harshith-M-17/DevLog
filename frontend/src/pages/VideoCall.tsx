@@ -38,10 +38,14 @@ export const VideoCall: React.FC = () => {
   useEffect(() => {
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:5001';
     
+    const token = localStorage.getItem('token');
     const newSocket = io(SOCKET_URL, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],  // polling first — more reliable through proxies
       reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
       withCredentials: true,
+      auth: { token },
     });
 
     setSocket(newSocket);
