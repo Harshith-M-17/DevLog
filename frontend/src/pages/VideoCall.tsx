@@ -17,6 +17,14 @@ export const VideoCall: React.FC = () => {
   const localStreamRef = useRef<MediaStream | null>(null);
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
+  // Once the local <video> element mounts (inCall=true), attach the stream.
+  // startLocalStream() runs before setInCall(true), so the ref is null at that point.
+  useEffect(() => {
+    if (inCall && localVideoRef.current && localStreamRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+    }
+  }, [inCall]);
+
   const iceServers = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
